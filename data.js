@@ -9,7 +9,7 @@ const products = [
   },
   {
     id: "p2",
-     name: "Smartphone Gimbal",
+    name: "Smartphone Gimbal",
     description:
       "Capture smooth, professional-quality videos with this smartphone gimbal.",
     price: 99.99,
@@ -81,4 +81,12 @@ const products = [
   },
 ];
 
-module.exports={products}
+const people = [
+  { id: 1, name: "John Smith" },
+  { id: 2, name: "Sarah Johnson" },
+  { id: 3, name: "Michael Lee" },
+  { id: 4, name: "Emily Davis" },
+  { id: 5, name: "David Kim" },
+];
+
+module.exports = { products, people };

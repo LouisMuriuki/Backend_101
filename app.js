@@ -1,54 +1,73 @@
 const express = require("express");
 const app = express();
-const { products } = require("./products");
+const morgan = require("morgan");
+const logger = require("./logger");
+const authorise = require("./authorise");
+let { people } = require("./data");
 
-app.get("/", (req, res) => {
-  res.send('<h1>HOME PAGE</hi><br/><a href="/api/products">Products</a> ');
+// app.use([morgan("tiny")])
+
+// app.get("/",  (req, res) => {
+//   res.send("Home");
+// });
+// app.get("/about", (req, res) => {
+//     console.log(req.user)
+//   res.send("About");
+// });
+//app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+app.post("/login", (req, res) => {
+  const { name } = req.body;
+  if (name) {
+    res.status(200).send(`welcome ${name}`);
+  } else {
+    res.status(401).send("please provide some details");
+  }
+});
+app.get("/api/people", (req, res) => {
+  res.status(200).json({ success: true, data: people });
 });
 
-app.get("/api/products", (req, res) => {
-  console.log(products);
-  const newProducts = products.map((product, i) => {
-    const { id, name, image } = product;
-    return { id, name, image };
+app.post("/api/people/postman", (req, res) => {
+  const { name } = req.body;
+  if (!name) {
+    return res
+      .status(400)
+      .json({ success: true, msg: "please provide some details" });
+  }
+  res.status(201).send({ success: true, data: [...people, { name, id: 6 }] });
+});
+
+app.put("/api/people/:id", (req, res) => {
+  const { id } = req.params;
+  const { name } = req.body;
+  const person = people.find((person) => person.id === Number(id));
+  if (!person) {
+    return res
+      .status(404)
+      .json({ success: false, mdg: `no person with id ${id}` });
+  }
+  const newPeople = people.map((person, i) => {
+    if (person.id === Number(id)) {
+      person.name = name;
+    }
+    return person;
   });
-  res.json(newProducts);
+  return res.status(200).json({ success: true, data: newPeople });
 });
 
-app.get("/api/products/:productID", (req, res) => {
-  console.log(req.params);
-  const { productID } = req.params;
-  const singleProduct = products.find((product) => product.id === productID);
-  if (!singleProduct) {
-    return res.status(404).send("product does not exixst");
+app.delete("/api/people/:id", (req, res) => {
+  const { id } = req.params;
+  const person = people.find((person) => person.id === Number(id));
+  if (!person) {
+    return res
+      .status(404)
+      .json({ success: false, mdg: `no person with id ${id}` });
   }
-  console.log(singleProduct);
-  res.json(singleProduct);
-});
-app.get("/api/v1/query", (req, res) => {
-  const{search,limit}=req.query
-  let sortedproducts=[...products]
-  if(search){
-    sortedproducts=sortedproducts.filter((products)=>{
-        return products.name.toLowerCase().startsWith(search.toLowerCase())
-    })
-  }
-  if(limit){
-    sortedproducts=sortedproducts.slice(0, Number(limit))
-  }
-  if(sortedproducts.length<1){
-  //  res.status(200).send("no products matched your query")
-   return res.status(200).json({sucess:true,data:[]})
-  }
-console.log(sortedproducts) 
-res.status(200).json(sortedproducts)
+  const newPeople = people.filter((person, i) => person.id !== Number(id));
+  return res.status(200).json({ success: true, data: newPeople });
 });
 
-app.all("*", (req, res) => {
-  res.status(404).send("nada");
-});
-// app.post()
-// app.put()
 app.listen(5000, () => {
-  console.log("we up ");
+  console.log("we up!");
 });
